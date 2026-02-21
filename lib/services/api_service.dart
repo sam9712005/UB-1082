@@ -9,7 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 class ApiService {
   // Use localhost for local development; replace with your machine IP for other devices
-  static const baseUrl = "https://ub-1082-production.up.railway.app";
+  static const baseUrl = "http://localhost:3000";
 
   static Future<void> saveToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
