@@ -9,7 +9,14 @@ import 'package:url_launcher/url_launcher.dart';
 
 class ApiService {
   // Use localhost for local development; replace with your machine IP for other devices
-  static const baseUrl = "http://localhost:3000";
+  static const baseUrl = "https://ub-1082-production.up.railway.app";
+
+  // Build endpoint URLs safely (avoids double-slash like //login)
+  static String _endpoint(String path) {
+    final base = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
+    final p = path.startsWith('/') ? path.substring(1) : path;
+    return '$base/$p';
+  }
 
   static Future<void> saveToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
@@ -23,7 +30,7 @@ class ApiService {
 
   static Future<void> register(String email, String password) async {
     final response = await http.post(
-      Uri.parse("$baseUrl/register"),
+      Uri.parse(_endpoint('register')),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({"email": email, "password": password}),
     );
@@ -43,7 +50,7 @@ class ApiService {
 
   static Future<Map<String, dynamic>> login(String email, String password) async {
     final response = await http.post(
-      Uri.parse("$baseUrl/login"),
+      Uri.parse(_endpoint('login')),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({"email": email, "password": password}),
     );
@@ -73,7 +80,7 @@ class ApiService {
 
     var request = http.MultipartRequest(
       'POST',
-      Uri.parse("$baseUrl/predict"),
+      Uri.parse(_endpoint('predict')),
     );
 
     request.headers["Authorization"] = "Bearer $token";
@@ -99,7 +106,7 @@ class ApiService {
     String? token = await getToken();
 
     final response = await http.get(
-      Uri.parse("$baseUrl/history"),
+      Uri.parse(_endpoint('history')),
       headers: {"Authorization": "Bearer $token"},
     );
 
@@ -107,7 +114,7 @@ class ApiService {
   }
 
   static Future<void> downloadReport(String reportFile) async {
-    final url = Uri.parse("$baseUrl/reports/$reportFile");
+    final url = Uri.parse(_endpoint('reports/$reportFile'));
     await launchUrl(url);
   }
 }

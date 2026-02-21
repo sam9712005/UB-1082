@@ -1,6 +1,9 @@
 const jwt = require("jsonwebtoken");
 
 module.exports = (req, res, next) => {
+  // Allow preflight requests to pass through without auth
+  if (req.method === 'OPTIONS') return next();
+
   const token = req.headers.authorization?.split(" ")[1];
 
   if (!token) {

@@ -18,21 +18,38 @@ router.post("/predict", authMiddleware, upload.single("mri"), (req, res) => {
   ]);
 
   let resultData = "";
+  let errorData = "";
 
   pythonProcess.stdout.on("data", (data) => {
     resultData += data.toString();
   });
 
-  pythonProcess.on("close", async () => {
+  pythonProcess.stderr.on("data", (data) => {
+    errorData += data.toString();
+  });
 
-    const result = JSON.parse(resultData);
+  pythonProcess.on("close", async (code) => {
+    console.log("Python process exited with code:", code);
+    console.log("resultData:", resultData);
+    console.log("errorData:", errorData);
 
-    await pool.query(
-      "INSERT INTO scans (user_id, tumor_type, confidence, report_file) VALUES ($1,$2,$3,$4)",
-      [req.user.id, result.classification, result.confidence_score, result.report_file]
-    );
+    if (!resultData.trim()) {
+      return res.status(500).json({ message: "Prediction failed: no output from Python script" });
+    }
 
-    res.json(result);
+    try {
+      const result = JSON.parse(resultData);
+
+      await pool.query(
+        "INSERT INTO scans (user_id, tumor_type, confidence, report_file) VALUES ($1,$2,$3,$4)",
+        [req.user.id, result.classification, result.confidence_score, result.report_file]
+      );
+
+      res.json(result);
+    } catch (parseError) {
+      console.error("JSON parse error:", parseError);
+      res.status(500).json({ message: "Prediction failed: invalid output from Python script" });
+    }
   });
 });
 
