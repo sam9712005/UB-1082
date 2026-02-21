@@ -10,6 +10,11 @@ const upload = multer({ dest: "uploads/" });
 
 router.post("/predict", authMiddleware, upload.single("mri"), (req, res) => {
 
+  // Defensive: ensure CORS headers present on this route responses
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+
+
   const imagePath = path.resolve(req.file.path);
 
   const pythonProcess = spawn("python", [

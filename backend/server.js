@@ -12,6 +12,8 @@ const app = express();
 
 app.use(express.json());
 app.use(cors());
+// Ensure preflight requests always receive CORS headers
+app.options('*', cors());
 app.use(cookieParser());
 app.use("/reports", express.static("ml/reports"));
 
