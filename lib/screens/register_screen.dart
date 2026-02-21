@@ -20,8 +20,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       Navigator.pop(context);
     } catch (e) {
+      // Show server error details to user and log for debugging
+      print('Registration error: $e');
+      final message = e?.toString() ?? 'Registration failed';
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Registration failed")));
+          .showSnackBar(SnackBar(content: Text(message)));
     }
   }
 

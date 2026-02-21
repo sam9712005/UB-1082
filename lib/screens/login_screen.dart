@@ -28,8 +28,11 @@ class _LoginScreenState extends State<LoginScreen> {
         MaterialPageRoute(builder: (_) => DashboardScreen()),
       );
     } catch (e) {
+      // Show detailed error to help debugging on device builds
+      print('Login error: $e');
+      final message = e?.toString() ?? 'Login failed';
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Login failed")));
+          .showSnackBar(SnackBar(content: Text(message)));
     }
 
     setState(() => loading = false);

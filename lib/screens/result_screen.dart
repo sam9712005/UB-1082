@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../widgets/confidence_bar.dart';
 import '../widgets/severity_badge.dart';
+import '../services/api_service.dart';
 
 class ResultScreen extends StatelessWidget {
   final Map<String, dynamic> resultData;
@@ -170,12 +171,7 @@ class ResultScreen extends StatelessWidget {
                       elevation: 5,
                     ),
                     onPressed: () async {
-                      final url =
-                          "http://localhost:3000/reports/${resultData["report_file"]}";
-
-                      if (await canLaunchUrl(Uri.parse(url))) {
-                        await launchUrl(Uri.parse(url));
-                      }
+                      await ApiService.downloadReport(resultData["report_file"]);
                     },
                   ),
                 ),

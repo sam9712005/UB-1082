@@ -9,7 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 class ApiService {
   // Use localhost for local development; replace with your machine IP for other devices
-  static const baseUrl = "http://localhost:3000";
+  static const baseUrl = "https://ub-1082-production.up.railway.app";
 
   static Future<void> saveToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
@@ -22,11 +22,23 @@ class ApiService {
   }
 
   static Future<void> register(String email, String password) async {
-    await http.post(
+    final response = await http.post(
       Uri.parse("$baseUrl/register"),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({"email": email, "password": password}),
     );
+
+    // Debug output to help diagnose failures on device builds
+    print('register response: ${response.statusCode} ${response.body}');
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      try {
+        final data = jsonDecode(response.body);
+        throw Exception(data['message'] ?? 'Registration failed');
+      } catch (_) {
+        throw Exception('Registration failed: ${response.statusCode}');
+      }
+    }
   }
 
   static Future<Map<String, dynamic>> login(String email, String password) async {
@@ -36,8 +48,23 @@ class ApiService {
       body: jsonEncode({"email": email, "password": password}),
     );
 
+    // Debug output to help diagnose failures on device builds
+    print('login response: ${response.statusCode} ${response.body}');
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      try {
+        final data = jsonDecode(response.body);
+        throw Exception(data['message'] ?? 'Login failed');
+      } catch (_) {
+        throw Exception('Login failed: ${response.statusCode}');
+      }
+    }
+
     final data = jsonDecode(response.body);
-    await saveToken(data["token"]);
+    final token = data["token"];
+    if (token == null) throw Exception('Login did not return a token');
+
+    await saveToken(token);
     return data;
   }
 
